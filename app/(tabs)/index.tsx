@@ -1,74 +1,94 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+// Import necessary hooks and components from React and React Native
+import { useState } from 'react';
+import { LayoutAnimation, UIManager, View, FlatList, Platform, StyleSheet, Text } from 'react-native';
+import TaskInput from '@/components/TaskInput'; // Custom component for adding tasks
+import TaskItem, { TaskItemTitle } from '../../components/TaskItem'; // Custom components for task display
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+// Enable layout animation for Android if supported
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
+// Define Task interface for strong typing of task objects
+export interface Task {
+  id: string; // Unique identifier for the task
+  text: string; // Task description
+  completed: boolean; // Completion status of the task
+}
+
+// Main component for the Home screen
 export default function HomeScreen() {
+  // State to manage the list of tasks
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  // Handler to add a new task
+  const addTaskHandler = (taskText: string) => {
+    setTasks((prevTasks) => [
+      ...prevTasks,
+      { id: Date.now().toString(), text: taskText, completed: false }, // Add new task with unique ID
+    ]);
+  };
+
+  // Handler to toggle the completion status of a task
+  const toggleTaskHandler = (id: string) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); // Smooth animation for UI updates
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === id ? { ...task, completed: !task.completed } : task // Toggle the `completed` property
+      )
+    );
+  };
+
+  // Handler to delete a task
+  const deleteTaskHandler = (id: string) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); // Smooth animation for UI updates
+    setTasks((prev) => prev.filter((task) => task.id !== id)); // Remove the task with the given ID
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+    <View style={styles.container}>
+      {/* Title component for the task list */}
+      <TaskItemTitle />
+      
+      {/* Input component to add new tasks */}
+      <TaskInput onAddTask={addTaskHandler} />
+
+      {/* Conditional rendering: Show message if no tasks, otherwise show the task list */}
+      {tasks.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No tasks yet. Add one above!</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={tasks} // Data source for the list
+          keyExtractor={(item) => item.id} // Unique key for each item
+          renderItem={({ item }) => (
+            <TaskItem
+              task={item} // Pass task data to the TaskItem component
+              onToggleComplete={toggleTaskHandler} // Pass toggle handler
+              onDelete={deleteTaskHandler} // Pass delete handler
+            />
+          )}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      )}
+    </View>
   );
 }
 
+// Styles for the HomeScreen component
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    paddingTop: 50,
+    paddingHorizontal: 16,
+    backgroundColor: '#fff', // White background
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  emptyContainer: {
+    marginTop: 40,
+    alignItems: 'center', // Center the message
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  emptyText: {
+    color: '#666', // Gray text color
+    fontSize: 16, // Font size for the message
   },
 });
