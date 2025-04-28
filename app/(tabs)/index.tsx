@@ -1,72 +1,141 @@
-// Import necessary hooks and components from React and React Native
+/**
+ * HomeScreen Component
+ * 
+ * This is the main screen of the Task Manager App. It allows users to add, toggle, delete, 
+ * and filter tasks. The tasks can be filtered by "all", "active", or "completed" states.
+ * 
+ * Features:
+ * - Add new tasks with a unique ID, text, and completion status.
+ * - Toggle the completion status of tasks.
+ * - Delete tasks from the list.
+ * - Filter tasks based on their completion status.
+ * - Smooth animations for task toggling and deletion using LayoutAnimation.
+ * 
+ * @component
+ * 
+ * @returns {JSX.Element} The rendered HomeScreen component.
+ * 
+ * @example
+ * // Usage in a React Navigation stack
+ * <Stack.Screen name="Home" component={HomeScreen} />
+ * 
+ * @interface Task
+ * @property {string} id - Unique identifier for the task.
+ * @property {string} text - The text description of the task.
+ * @property {boolean} completed - Indicates whether the task is completed.
+ * 
+ * @function addTaskHandler
+ * Adds a new task to the list.
+ * @param {string} taskText - The text of the task to be added.
+ * 
+ * @function toggleTaskHandler
+ * Toggles the completion status of a task.
+ * @param {string} id - The ID of the task to toggle.
+ * 
+ * @function deleteTaskHandler
+ * Deletes a task from the list.
+ * @param {string} id - The ID of the task to delete.
+ * 
+ * @function filteredTasks
+ * Filters the tasks based on the current filter state.
+ * @returns {Task[]} The filtered list of tasks.
+ * 
+ * @constant styles
+ * Contains the styles for the HomeScreen component, including container, filter buttons, 
+ * and empty state styles.
+ */
 import { useState } from 'react';
-import { LayoutAnimation, UIManager, View, FlatList, Platform, StyleSheet, Text } from 'react-native';
-import TaskInput from '@/components/TaskInput'; // Custom component for adding tasks
-import TaskItem, { TaskItemTitle } from '../../components/TaskItem'; // Custom components for task display
+import { LayoutAnimation, UIManager, View, FlatList, Platform, StyleSheet, Text, Pressable } from 'react-native';
+import TaskInput from '@/components/TaskInput';
+import TaskItem, { TaskItemTitle } from '../../components/TaskItem';
+import AppLoading from 'expo-app-loading';
+import { useFonts, Inter_400Regular, Inter_600SemiBold } from '@expo-google-fonts/inter';
+
 
 // Enable layout animation for Android if supported
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-// Define Task interface for strong typing of task objects
+// Define Task interface
 export interface Task {
-  id: string; // Unique identifier for the task
-  text: string; // Task description
-  completed: boolean; // Completion status of the task
+  id: string;
+  text: string;
+  completed: boolean;
 }
 
-// Main component for the Home screen
+// Main Home Screen
 export default function HomeScreen() {
-  // State to manage the list of tasks
   const [tasks, setTasks] = useState<Task[]>([]);
-
-  // Handler to add a new task
+  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
+  const [fontsLoaded] = useFonts({
+    Inter_400Regular,
+    Inter_600SemiBold,
+  });
+  
+  if (!fontsLoaded) {
+    return <AppLoading />;
+  }
   const addTaskHandler = (taskText: string) => {
     setTasks((prevTasks) => [
       ...prevTasks,
-      { id: Date.now().toString(), text: taskText, completed: false }, // Add new task with unique ID
+      { id: Date.now().toString(), text: taskText, completed: false },
     ]);
   };
 
-  // Handler to toggle the completion status of a task
   const toggleTaskHandler = (id: string) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); // Smooth animation for UI updates
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setTasks((prev) =>
       prev.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task // Toggle the `completed` property
+        task.id === id ? { ...task, completed: !task.completed } : task
       )
     );
   };
 
-  // Handler to delete a task
   const deleteTaskHandler = (id: string) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); // Smooth animation for UI updates
-    setTasks((prev) => prev.filter((task) => task.id !== id)); // Remove the task with the given ID
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setTasks((prev) => prev.filter((task) => task.id !== id));
   };
+
+  // Filtered tasks based on current filter
+  const filteredTasks = tasks.filter(task => {
+    if (filter === 'all') return true;
+    if (filter === 'active') return !task.completed;
+    if (filter === 'completed') return task.completed;
+  });
 
   return (
     <View style={styles.container}>
-      {/* Title component for the task list */}
       <TaskItemTitle />
-      
-      {/* Input component to add new tasks */}
       <TaskInput onAddTask={addTaskHandler} />
 
-      {/* Conditional rendering: Show message if no tasks, otherwise show the task list */}
-      {tasks.length === 0 ? (
+      {/* Filter Buttons */}
+      <View style={styles.filterContainer}>
+        <Pressable onPress={() => setFilter('all')} style={[styles.filterButton, filter === 'all' && styles.activeFilter]}>
+          <Text style={styles.filterText}>All</Text>
+        </Pressable>
+        <Pressable onPress={() => setFilter('active')} style={[styles.filterButton, filter === 'active' && styles.activeFilter]}>
+          <Text style={styles.filterText}>Active</Text>
+        </Pressable>
+        <Pressable onPress={() => setFilter('completed')} style={[styles.filterButton, filter === 'completed' && styles.activeFilter]}>
+          <Text style={styles.filterText}>Completed</Text>
+        </Pressable>
+      </View>
+
+      {/* Task List */}
+      {filteredTasks.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No tasks yet. Add one above!</Text>
         </View>
       ) : (
         <FlatList
-          data={tasks} // Data source for the list
-          keyExtractor={(item) => item.id} // Unique key for each item
+          data={filteredTasks}
+          keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <TaskItem
-              task={item} // Pass task data to the TaskItem component
-              onToggleComplete={toggleTaskHandler} // Pass toggle handler
-              onDelete={deleteTaskHandler} // Pass delete handler
+              task={item}
+              onToggleComplete={toggleTaskHandler}
+              onDelete={deleteTaskHandler}
             />
           )}
         />
@@ -75,20 +144,53 @@ export default function HomeScreen() {
   );
 }
 
-// Styles for the HomeScreen component
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 50,
     paddingHorizontal: 16,
-    backgroundColor: '#fff', // White background
+    backgroundColor: '#fff',
   },
+  filterContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 16,
+    gap: 10,
+  },
+  filterButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: '#eee',
+  },
+  activeFilter: {
+    backgroundColor: '#007aff',
+  },
+  // Removed duplicate filterText definition
   emptyContainer: {
     marginTop: 40,
-    alignItems: 'center', // Center the message
+    alignItems: 'center',
   },
   emptyText: {
-    color: '#666', // Gray text color
-    fontSize: 16, // Font size for the message
+    fontSize: 16,
+    fontFamily: 'Inter_400Regular',
+    color: '#666',
+  },
+  title: {
+    fontSize: 28,
+    fontFamily: 'Inter_600SemiBold',
+    textAlign: 'center',
+    color: '#007aff',
+  },
+  text: {
+    fontSize: 16,
+    fontFamily: 'Inter_400Regular',
+    color: '#333',
+  },
+  filterText: {
+    fontSize: 14,
+    fontFamily: 'Inter_400Regular',
+    color: '#333',
   },
 });

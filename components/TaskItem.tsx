@@ -2,6 +2,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Task } from '../app/(tabs)/index';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
+import { Swipeable } from 'react-native-gesture-handler';
 
 // Define the props for the TaskItem component
 interface Props {
@@ -20,22 +23,31 @@ const TaskItemTitle = () => (
 
 // The main TaskItem component to display individual tasks
 const TaskItem: React.FC<Props> = ({ task, onToggleComplete, onDelete }) => {
+  const renderRightActions = () => {
+    return (
+      <Pressable onPress={() => onDelete(task.id)} style={styles.rightAction}>
+        <MaterialIcons name="delete" size={24} color="white" />
+      </Pressable>
+    );
+  };
+
   return (
-    <View style={[styles.taskItem, task.completed && styles.completedTask]}>
-      {/* Pressable to toggle task completion */}
-      <Pressable onPress={() => onToggleComplete(task.id)} style={styles.taskTextContainer}>
-        <Text style={[styles.status, task.completed && styles.statusDone]}>
-          {task.completed ? '✓' : '○'} {/* Display checkmark if completed */}
-        </Text>
-        <Text style={[styles.text, task.completed && styles.textDone]}>
-          {task.text} {/* Display task text */}
-        </Text>
-      </Pressable>
-      {/* Pressable to delete the task */}
-      <Pressable onPress={() => onDelete(task.id)}>
-        <Text style={styles.deleteIcon}>🗑️</Text> {/* Trash icon for delete */}
-      </Pressable>
-    </View>
+    <Swipeable renderRightActions={renderRightActions}>
+      <View style={[styles.taskItem, task.completed && styles.completedTask]}>
+        {/* Pressable to toggle task completion */}
+        <Pressable onPress={() => onToggleComplete(task.id)} style={styles.taskTextContainer}>
+          <MaterialCommunityIcons
+            name={task.completed ? 'checkbox-marked' : 'checkbox-blank-outline'}
+            size={24}
+            color={task.completed ? '#007aff' : '#ccc'}
+            style={styles.status}
+          />
+          <Text style={[styles.text, task.completed && styles.textDone]}>
+            {task.text} {/* Display task text */}
+          </Text>
+        </Pressable>
+      </View>
+    </Swipeable>
   );
 };
 
@@ -88,18 +100,17 @@ const styles = StyleSheet.create({
     color: '#999', // Gray color for completed tasks
     fontWeight: '400', // Regular font weight
   },
-  deleteIcon: {
-    fontSize: 18,
-    color: '#60a5fa', // Blue color for delete icon
-    paddingLeft: 12, // Space between text and delete icon
-  },
   status: {
     fontSize: 18,
     color: '#333', // Dark color for status icon
     marginRight: 8, // Space between status icon and text
   },
-  statusDone: {
-    color: '#4caf50', // Green color for completed status
+  rightAction: {
+    backgroundColor: '#f54242', // Red background for delete action
+    justifyContent: 'center', // Center align the delete icon
+    alignItems: 'center', // Center align the delete icon
+    width: 70, // Fixed width for the swipe action
+    borderRadius: 16, // Match the task item border radius
   },
 });
 
