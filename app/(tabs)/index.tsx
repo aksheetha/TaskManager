@@ -1,56 +1,9 @@
-/**
- * HomeScreen Component
- * 
- * This is the main screen of the Task Manager App. It allows users to add, toggle, delete, 
- * and filter tasks. The tasks can be filtered by "all", "active", or "completed" states.
- * 
- * Features:
- * - Add new tasks with a unique ID, text, and completion status.
- * - Toggle the completion status of tasks.
- * - Delete tasks from the list.
- * - Filter tasks based on their completion status.
- * - Smooth animations for task toggling and deletion using LayoutAnimation.
- * 
- * @component
- * 
- * @returns {JSX.Element} The rendered HomeScreen component.
- * 
- * @example
- * // Usage in a React Navigation stack
- * <Stack.Screen name="Home" component={HomeScreen} />
- * 
- * @interface Task
- * @property {string} id - Unique identifier for the task.
- * @property {string} text - The text description of the task.
- * @property {boolean} completed - Indicates whether the task is completed.
- * 
- * @function addTaskHandler
- * Adds a new task to the list.
- * @param {string} taskText - The text of the task to be added.
- * 
- * @function toggleTaskHandler
- * Toggles the completion status of a task.
- * @param {string} id - The ID of the task to toggle.
- * 
- * @function deleteTaskHandler
- * Deletes a task from the list.
- * @param {string} id - The ID of the task to delete.
- * 
- * @function filteredTasks
- * Filters the tasks based on the current filter state.
- * @returns {Task[]} The filtered list of tasks.
- * 
- * @constant styles
- * Contains the styles for the HomeScreen component, including container, filter buttons, 
- * and empty state styles.
- */
 import { useState } from 'react';
-import { LayoutAnimation, UIManager, View, FlatList, Platform, StyleSheet, Text, Pressable } from 'react-native';
+import { LayoutAnimation, UIManager, View, FlatList, Platform, StyleSheet, Text, Pressable, Animated } from 'react-native';
 import TaskInput from '@/components/TaskInput';
 import TaskItem, { TaskItemTitle } from '../../components/TaskItem';
 import AppLoading from 'expo-app-loading';
 import { useFonts, Inter_400Regular, Inter_600SemiBold } from '@expo-google-fonts/inter';
-
 
 // Enable layout animation for Android if supported
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -68,14 +21,32 @@ export interface Task {
 export default function HomeScreen() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const bulbScale = useState(new Animated.Value(1))[0];
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
     Inter_600SemiBold,
   });
-  
+
   if (!fontsLoaded) {
     return <AppLoading />;
   }
+
+  const bounceBulb = () => {
+    Animated.sequence([
+      Animated.timing(bulbScale, {
+        toValue: 1.2,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      Animated.timing(bulbScale, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
   const addTaskHandler = (taskText: string) => {
     setTasks((prevTasks) => [
       ...prevTasks,
@@ -97,7 +68,6 @@ export default function HomeScreen() {
     setTasks((prev) => prev.filter((task) => task.id !== id));
   };
 
-  // Filtered tasks based on current filter
   const filteredTasks = tasks.filter(task => {
     if (filter === 'all') return true;
     if (filter === 'active') return !task.completed;
@@ -105,27 +75,39 @@ export default function HomeScreen() {
   });
 
   return (
-    <View style={styles.container}>
-      <TaskItemTitle />
+    <View style={[styles.container, { backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
+      <TaskItemTitle
+        isDarkMode={isDarkMode}
+        toggleDarkMode={() => {
+          bounceBulb();
+          setIsDarkMode((prev) => !prev);
+        }}
+        bulbScale={bulbScale}
+      />
+
       <TaskInput onAddTask={addTaskHandler} />
 
       {/* Filter Buttons */}
       <View style={styles.filterContainer}>
-        <Pressable onPress={() => setFilter('all')} style={[styles.filterButton, filter === 'all' && styles.activeFilter]}>
-          <Text style={styles.filterText}>All</Text>
-        </Pressable>
-        <Pressable onPress={() => setFilter('active')} style={[styles.filterButton, filter === 'active' && styles.activeFilter]}>
-          <Text style={styles.filterText}>Active</Text>
-        </Pressable>
-        <Pressable onPress={() => setFilter('completed')} style={[styles.filterButton, filter === 'completed' && styles.activeFilter]}>
-          <Text style={styles.filterText}>Completed</Text>
-        </Pressable>
+        {['all', 'active', 'completed'].map((type) => (
+          <Pressable
+            key={type}
+            onPress={() => setFilter(type as 'all' | 'active' | 'completed')}
+            style={[styles.filterButton, { backgroundColor: isDarkMode ? '#333' : '#eee' }, filter === type && { backgroundColor: '#007aff' }]}
+          >
+            <Text
+              style={[styles.filterText, { color: filter === type ? '#fff' : isDarkMode ? '#eee' : '#333' }]}
+            >
+              {type.charAt(0).toUpperCase() + type.slice(1)}
+            </Text>
+          </Pressable>
+        ))}
       </View>
 
       {/* Task List */}
       {filteredTasks.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No tasks yet. Add one above!</Text>
+          <Text style={[styles.emptyText, { color: isDarkMode ? '#aaa' : '#666' }]}>No tasks yet. Add one above!</Text>
         </View>
       ) : (
         <FlatList
@@ -136,6 +118,7 @@ export default function HomeScreen() {
               task={item}
               onToggleComplete={toggleTaskHandler}
               onDelete={deleteTaskHandler}
+              isDarkMode={isDarkMode}
             />
           )}
         />
@@ -150,7 +133,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 50,
     paddingHorizontal: 16,
-    backgroundColor: '#fff',
   },
   filterContainer: {
     flexDirection: 'row',
@@ -162,12 +144,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
-    backgroundColor: '#eee',
   },
-  activeFilter: {
-    backgroundColor: '#007aff',
-  },
-  // Removed duplicate filterText definition
   emptyContainer: {
     marginTop: 40,
     alignItems: 'center',
@@ -175,7 +152,6 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     fontFamily: 'Inter_400Regular',
-    color: '#666',
   },
   title: {
     fontSize: 28,
@@ -186,11 +162,13 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 16,
     fontFamily: 'Inter_400Regular',
-    color: '#333',
   },
   filterText: {
     fontSize: 14,
     fontFamily: 'Inter_400Regular',
-    color: '#333',
+  },
+  bulbButton: {
+    alignSelf: 'center',
+    marginVertical: 10,
   },
 });

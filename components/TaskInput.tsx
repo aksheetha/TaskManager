@@ -8,7 +8,7 @@ interface Props {
 const TaskInput: React.FC<Props> = ({ onAddTask }) => {
   const [enteredTask, setEnteredTask] = useState(''); // State to store the entered task text
 
-  // Function to handle the "Add" button press
+  // Function to handle the "Add" button press or "Enter" key
   const handleAdd = () => {
     if (enteredTask.trim()) { // Ensure the task is not empty or just whitespace
       onAddTask(enteredTask); // Pass the task text to the parent component
@@ -24,6 +24,7 @@ const TaskInput: React.FC<Props> = ({ onAddTask }) => {
         placeholderTextColor="#aaa"
         value={enteredTask}
         onChangeText={setEnteredTask}
+        onSubmitEditing={handleAdd} // Trigger task addition when "Enter" is pressed
         style={styles.input}
       />
       {/* Button to add the task */}

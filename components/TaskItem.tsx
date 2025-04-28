@@ -1,28 +1,45 @@
 // components/TaskItem.tsx
 import React from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Animated } from 'react-native';
 import { Task } from '../app/(tabs)/index';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Swipeable } from 'react-native-gesture-handler';
 
-// Define the props for the TaskItem component
+// Define props including isDarkMode
 interface Props {
-  task: Task; // The task object containing task details
-  onToggleComplete: (id: string) => void; // Function to toggle task completion
-  onDelete: (id: string) => void; // Function to delete the task
+  task: Task;
+  onToggleComplete: (id: string) => void;
+  onDelete: (id: string) => void;
+  isDarkMode: boolean;
+}
+
+interface TaskItemTitleProps {
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
+  bulbScale: Animated.Value;
 }
 
 // A reusable title component for the Task Manager app
-const TaskItemTitle = () => (
-  <View style={styles.titleContainer}>
-    <Text style={styles.title}>Task Manager</Text>
-    <Text style={styles.subtitle}>Organize. Track. Complete.</Text>
+const TaskItemTitle: React.FC<TaskItemTitleProps> = ({ isDarkMode, toggleDarkMode, bulbScale }) => (
+  <View style={styles.titleContainerWithBulb}>
+    <View>
+      <Text style={[styles.title, { color: isDarkMode ? '#fff' : '#007aff' }]}>Task Manager</Text>
+      <Text style={[styles.subtitle, { color: isDarkMode ? '#aaa' : '#666' }]}>Organize. Track. Complete.</Text>
+    </View>
+    <Pressable onPress={toggleDarkMode} style={styles.bulbButton}>
+      <Animated.View style={{ transform: [{ scale: bulbScale }] }}>
+        <MaterialCommunityIcons
+          name={isDarkMode ? 'lightbulb-off' : 'lightbulb-on'}
+          size={30}
+          color={isDarkMode ? '#aaa' : '#ffd700'}
+        />
+      </Animated.View>
+    </Pressable>
   </View>
 );
 
-// The main TaskItem component to display individual tasks
-const TaskItem: React.FC<Props> = ({ task, onToggleComplete, onDelete }) => {
+const TaskItem: React.FC<Props> = ({ task, onToggleComplete, onDelete, isDarkMode }) => {
   const renderRightActions = () => {
     return (
       <Pressable onPress={() => onDelete(task.id)} style={styles.rightAction}>
@@ -33,17 +50,28 @@ const TaskItem: React.FC<Props> = ({ task, onToggleComplete, onDelete }) => {
 
   return (
     <Swipeable renderRightActions={renderRightActions}>
-      <View style={[styles.taskItem, task.completed && styles.completedTask]}>
-        {/* Pressable to toggle task completion */}
+      <View
+        style={[
+          styles.taskItem,
+          { backgroundColor: isDarkMode ? '#1c1c1e' : '#eef7f1' },
+          task.completed && { backgroundColor: isDarkMode ? '#2c2c2e' : '#e9fbe9' },
+        ]}
+      >
         <Pressable onPress={() => onToggleComplete(task.id)} style={styles.taskTextContainer}>
           <MaterialCommunityIcons
             name={task.completed ? 'checkbox-marked' : 'checkbox-blank-outline'}
             size={24}
-            color={task.completed ? '#007aff' : '#ccc'}
+            color={task.completed ? '#007aff' : isDarkMode ? '#aaa' : '#ccc'}
             style={styles.status}
           />
-          <Text style={[styles.text, task.completed && styles.textDone]}>
-            {task.text} {/* Display task text */}
+          <Text
+            style={[
+              styles.text,
+              { color: isDarkMode ? '#fff' : '#333' },
+              task.completed && styles.textDone,
+            ]}
+          >
+            {task.text}
           </Text>
         </Pressable>
       </View>
@@ -51,66 +79,66 @@ const TaskItem: React.FC<Props> = ({ task, onToggleComplete, onDelete }) => {
   );
 };
 
-// Styles for the components
+// Styles
 const styles = StyleSheet.create({
-  subtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 4, // Space between title and subtitle
-  },
-  titleContainer: {
-    marginBottom: 20, // Space below the title container
-    alignItems: 'center', // Center align title and subtitle
+  titleContainerWithBulb: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    marginBottom: 20,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    textAlign: 'center',
-    color: '#007aff', // Blue color for the title
+    textAlign: 'left',
+    fontFamily: 'Inter_600SemiBold',
+  },
+  subtitle: {
+    fontSize: 14,
+    marginTop: 4,
+    fontFamily: 'Inter_400Regular',
+  },
+  bulbButton: {
+    padding: 8,
   },
   taskItem: {
-    flexDirection: 'row', // Arrange items in a row
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#eef7f1', // Light green background
-    marginVertical: 6, // Space between task items
-    padding: 14, // Padding inside the task item
-    borderRadius: 16, // Rounded corners
-    justifyContent: 'space-between', // Space between text and delete icon
-    shadowColor: '#000', // Shadow color
-    shadowOffset: { width: 0, height: 1 }, // Shadow offset
-    shadowOpacity: 0.05, // Shadow transparency
-    shadowRadius: 2, // Shadow blur radius
-    elevation: 1, // Elevation for Android shadow
-  },
-  completedTask: {
-    backgroundColor: '#e9fbe9', // Light green background for completed tasks
+    marginVertical: 6,
+    padding: 14,
+    borderRadius: 16,
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   taskTextContainer: {
-    flexDirection: 'row', // Arrange status and text in a row
+    flexDirection: 'row',
     alignItems: 'center',
-    flex: 1, // Take up remaining space
+    flex: 1,
   },
   text: {
     fontSize: 16,
-    color: '#333', // Dark text color
-    fontWeight: '500', // Medium font weight
+    fontWeight: '500',
+    marginLeft: 8,
   },
   textDone: {
-    textDecorationLine: 'line-through', // Strike-through for completed tasks
-    color: '#999', // Gray color for completed tasks
-    fontWeight: '400', // Regular font weight
+    textDecorationLine: 'line-through',
+    color: '#999',
   },
   status: {
     fontSize: 18,
-    color: '#333', // Dark color for status icon
-    marginRight: 8, // Space between status icon and text
   },
   rightAction: {
-    backgroundColor: '#f54242', // Red background for delete action
-    justifyContent: 'center', // Center align the delete icon
-    alignItems: 'center', // Center align the delete icon
-    width: 70, // Fixed width for the swipe action
-    borderRadius: 16, // Match the task item border radius
+    backgroundColor: '#f54242',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 70,
+    borderRadius: 16,
+    marginVertical: 6,
   },
 });
 
