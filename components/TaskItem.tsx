@@ -1,32 +1,35 @@
-// components/TaskItem.tsx
-import React from 'react';
-import { View, Text, StyleSheet, Pressable, Animated } from 'react-native';
-import { Task } from '../app/(tabs)/index';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { MaterialIcons } from '@expo/vector-icons';
-import { Swipeable } from 'react-native-gesture-handler';
+// Import necessary libraries and components
+import React, { useState, useEffect } from 'react';
+import { Animated, Text, View, StyleSheet, Pressable } from 'react-native';
+import { Task } from '../app/(tabs)/index'; // Import Task interface for type safety
+import { MaterialCommunityIcons } from '@expo/vector-icons'; // Icons for task status and dark mode
+import { MaterialIcons } from '@expo/vector-icons'; // Icons for delete action
+import { Swipeable } from 'react-native-gesture-handler'; // Swipeable component for swipe actions
 
-// Define props including isDarkMode
+// Define props for the TaskItem component
 interface Props {
-  task: Task;
-  onToggleComplete: (id: string) => void;
-  onDelete: (id: string) => void;
-  isDarkMode: boolean;
+  task: Task; // Task object containing id, text, and completion status
+  onToggleComplete: (id: string) => void; // Function to toggle task completion
+  onDelete: (id: string) => void; // Function to delete a task
+  isDarkMode: boolean; // Boolean to determine if dark mode is enabled
 }
 
+// Define props for the TaskItemTitle component
 interface TaskItemTitleProps {
-  isDarkMode: boolean;
-  toggleDarkMode: () => void;
-  bulbScale: Animated.Value;
+  isDarkMode: boolean; // Boolean to determine if dark mode is enabled
+  toggleDarkMode: () => void; // Function to toggle dark mode
+  bulbScale: Animated.Value; // Animated value for scaling the lightbulb icon
 }
 
 // A reusable title component for the Task Manager app
 const TaskItemTitle: React.FC<TaskItemTitleProps> = ({ isDarkMode, toggleDarkMode, bulbScale }) => (
   <View style={styles.titleContainerWithBulb}>
+    {/* Title and subtitle of the app */}
     <View>
       <Text style={[styles.title, { color: isDarkMode ? '#fff' : '#007aff' }]}>Task Manager</Text>
       <Text style={[styles.subtitle, { color: isDarkMode ? '#aaa' : '#666' }]}>Organize. Track. Complete.</Text>
     </View>
+    {/* Lightbulb icon to toggle dark mode */}
     <Pressable onPress={toggleDarkMode} style={styles.bulbButton}>
       <Animated.View style={{ transform: [{ scale: bulbScale }] }}>
         <MaterialCommunityIcons
@@ -39,7 +42,9 @@ const TaskItemTitle: React.FC<TaskItemTitleProps> = ({ isDarkMode, toggleDarkMod
   </View>
 );
 
+// Component to display individual tasks
 const TaskItem: React.FC<Props> = ({ task, onToggleComplete, onDelete, isDarkMode }) => {
+  // Function to render the delete button when swiping
   const renderRightActions = () => {
     return (
       <Pressable onPress={() => onDelete(task.id)} style={styles.rightAction}>
@@ -48,18 +53,32 @@ const TaskItem: React.FC<Props> = ({ task, onToggleComplete, onDelete, isDarkMod
     );
   };
 
+  // Animated value for fade-in effect
+  const fadeAnim = useState(new Animated.Value(0))[0];
+
+  // Trigger fade-in animation when the component mounts
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
   return (
     <Swipeable renderRightActions={renderRightActions}>
-      <View
+      {/* Animated container for the task item */}
+      <Animated.View
         style={[
           styles.taskItem,
-          { backgroundColor: isDarkMode ? '#1c1c1e' : '#eef7f1' },
-          task.completed && { backgroundColor: isDarkMode ? '#2c2c2e' : '#e9fbe9' },
+          { opacity: fadeAnim, backgroundColor: isDarkMode ? '#1c1c1e' : '#eef7f1' }, // Background color based on dark mode
+          task.completed && { backgroundColor: isDarkMode ? '#2c2c2e' : '#e9fbe9' }, // Different color for completed tasks
         ]}
       >
+        {/* Task text and status */}
         <Pressable onPress={() => onToggleComplete(task.id)} style={styles.taskTextContainer}>
           <MaterialCommunityIcons
-            name={task.completed ? 'checkbox-marked' : 'checkbox-blank-outline'}
+            name={task.completed ? 'checkbox-marked' : 'checkbox-blank-outline'} // Checkbox icon based on completion status
             size={24}
             color={task.completed ? '#007aff' : isDarkMode ? '#aaa' : '#ccc'}
             style={styles.status}
@@ -67,19 +86,19 @@ const TaskItem: React.FC<Props> = ({ task, onToggleComplete, onDelete, isDarkMod
           <Text
             style={[
               styles.text,
-              { color: isDarkMode ? '#fff' : '#333' },
-              task.completed && styles.textDone,
+              { color: isDarkMode ? '#fff' : '#333' }, // Text color based on dark mode
+              task.completed && styles.textDone, // Strikethrough style for completed tasks
             ]}
           >
             {task.text}
           </Text>
         </Pressable>
-      </View>
+      </Animated.View>
     </Swipeable>
   );
 };
 
-// Styles
+// Styles for the TaskItem and TaskItemTitle components
 const styles = StyleSheet.create({
   titleContainerWithBulb: {
     flexDirection: 'row',

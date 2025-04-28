@@ -1,38 +1,72 @@
-import React, { useState } from 'react';
-import { View, TextInput, Pressable, Text, StyleSheet } from 'react-native';
+// Import necessary libraries and components
+import React, { useState, useRef } from 'react';
+import { View, TextInput, Pressable, Text, StyleSheet, Animated } from 'react-native';
 
+// Define the props for the TaskInput component
 interface Props {
   onAddTask: (taskText: string) => void; // Function to handle adding a new task
 }
 
+// TaskInput component for adding new tasks
 const TaskInput: React.FC<Props> = ({ onAddTask }) => {
-  const [enteredTask, setEnteredTask] = useState(''); // State to store the entered task text
+  // State to store the entered task text
+  const [enteredTask, setEnteredTask] = useState('');
 
-  // Function to handle the "Add" button press or "Enter" key
+  // Animated value for the shake effect
+  const shakeAnimation = useState(new Animated.Value(0))[0];
+
+  // Reference to the TextInput for focusing after adding a task
+  const inputRef = useRef<TextInput>(null);
+
+  // Function to trigger a shake animation when the input is invalid
+  const triggerShake = () => {
+    Animated.sequence([
+      Animated.timing(shakeAnimation, { toValue: 10, duration: 50, useNativeDriver: true }),
+      Animated.timing(shakeAnimation, { toValue: -10, duration: 50, useNativeDriver: true }),
+      Animated.timing(shakeAnimation, { toValue: 6, duration: 50, useNativeDriver: true }),
+      Animated.timing(shakeAnimation, { toValue: -6, duration: 50, useNativeDriver: true }),
+      Animated.timing(shakeAnimation, { toValue: 0, duration: 50, useNativeDriver: true }),
+    ]).start();
+  };
+
+  // Function to handle adding a task
   const handleAdd = () => {
-    if (enteredTask.trim()) { // Ensure the task is not empty or just whitespace
-      onAddTask(enteredTask); // Pass the task text to the parent component
-      setEnteredTask(''); // Clear the input field
+    if (enteredTask.trim()) {
+      // If the task is valid, call the onAddTask function and clear the input
+      onAddTask(enteredTask.trim());
+      setEnteredTask('');
+      // Focus the input field after a short delay
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    } else {
+      // Trigger the shake animation if the input is empty
+      triggerShake();
     }
   };
 
   return (
     <View style={styles.container}>
-      {/* Input field for entering a new task */}
-      <TextInput
-        placeholder="Add a new task..."
-        placeholderTextColor="#aaa"
-        value={enteredTask}
-        onChangeText={setEnteredTask}
-        onSubmitEditing={handleAdd} // Trigger task addition when "Enter" is pressed
-        style={styles.input}
-      />
+      {/* Animated container for the input field */}
+      <Animated.View style={{ flex: 1, transform: [{ translateX: shakeAnimation }] }}>
+        <TextInput
+          ref={inputRef} // Reference to the input field
+          placeholder="Add a new task..." // Placeholder text
+          placeholderTextColor="#aaa" // Placeholder text color
+          value={enteredTask} // Bind the input value to the state
+          onChangeText={setEnteredTask} // Update the state when the input changes
+          onSubmitEditing={handleAdd} // Add the task when the "Enter" key is pressed
+          style={styles.input} // Apply styles to the input
+          returnKeyType="done" // Set the return key type to "done"
+        />
+      </Animated.View>
+
       {/* Button to add the task */}
       <Pressable
-        onPress={handleAdd}
+        onPress={handleAdd} // Call handleAdd when the button is pressed
         style={({ pressed }) => [
           styles.button,
-          pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] }, // Add visual feedback on press
+          pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] }, // Add visual feedback when pressed
         ]}
       >
         <Text style={styles.buttonText}>Add</Text>
@@ -41,6 +75,7 @@ const TaskInput: React.FC<Props> = ({ onAddTask }) => {
   );
 };
 
+// Styles for the TaskInput component
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row', // Arrange input and button in a row
