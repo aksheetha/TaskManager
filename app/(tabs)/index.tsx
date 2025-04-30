@@ -1,5 +1,8 @@
+import React from 'react';
 import { useState } from 'react';
-import { LayoutAnimation, UIManager, View, FlatList, Platform, StyleSheet, Text, Pressable, Animated, Alert } from 'react-native';
+import { LayoutAnimation, UIManager, View, FlatList, Platform, StyleSheet, Text, Pressable, Animated, Alert,
+} from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler'; // Import GestureHandlerRootView
 import TaskInput from '@/components/TaskInput';
 import TaskItem, { TaskItemTitle } from '../../components/TaskItem';
 import AppLoading from 'expo-app-loading';
@@ -40,12 +43,12 @@ export default function HomeScreen() {
   const bounceBulb = () => {
     Animated.sequence([
       Animated.timing(bulbScale, {
-        toValue: 1.2,
+        toValue: 1.2, // Scale up
         duration: 150,
         useNativeDriver: true,
       }),
       Animated.timing(bulbScale, {
-        toValue: 1,
+        toValue: 1, // Scale back to normal
         duration: 150,
         useNativeDriver: true,
       }),
@@ -62,7 +65,7 @@ export default function HomeScreen() {
 
   // Toggle the completion status of a task
   const toggleTaskHandler = (id: string) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); // Smooth animation
     setTasks((prev) =>
       prev.map((task) =>
         task.id === id ? { ...task, completed: !task.completed } : task
@@ -72,105 +75,122 @@ export default function HomeScreen() {
 
   // Delete a task
   const deleteTaskHandler = (id: string) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); // Smooth animation
     setTasks((prev) => prev.filter((task) => task.id !== id));
   };
 
   // Clear all tasks with confirmation
   const clearAllTasksHandler = () => {
-    if (tasks.length === 0) return;
+    if (tasks.length === 0) return; // Do nothing if there are no tasks
 
     if (Platform.OS === 'web') {
+      // Confirmation dialog for web
       const confirm = window.confirm('Are you sure you want to delete all tasks?');
       if (confirm) {
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         setTasks([]);
       }
     } else {
+      // Confirmation dialog for mobile
       Alert.alert(
         "Clear All Tasks",
         "Are you sure you want to delete all tasks?",
         [
           { text: "Cancel", style: "cancel" },
-          { text: "Clear All", style: "destructive", onPress: () => {
+          {
+            text: "Clear All",
+            style: "destructive",
+            onPress: () => {
               LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
               setTasks([]);
-            }
-          }
+            },
+          },
         ]
       );
     }
   };
 
   // Filter tasks based on the selected filter
-  const filteredTasks = tasks.filter(task => {
-    if (filter === 'all') return true;
-    if (filter === 'active') return !task.completed;
-    if (filter === 'completed') return task.completed;
+  const filteredTasks = tasks.filter((task) => {
+    if (filter === 'all') return true; // Show all tasks
+    if (filter === 'active') return !task.completed; // Show only active tasks
+    if (filter === 'completed') return task.completed; // Show only completed tasks
   });
 
   return (
-    <View style={[styles.container, { backgroundColor: isDarkMode ? '#000' : '#fff' }]}> 
-      {/* Header with dark mode toggle */}
-      <TaskItemTitle
-        isDarkMode={isDarkMode}
-        toggleDarkMode={() => {
-          bounceBulb();
-          setIsDarkMode((prev) => !prev);
-        }}
-        bulbScale={bulbScale}
-      />
-
-      {/* Input field for adding tasks */}
-      <TaskInput onAddTask={addTaskHandler} />
-
-      {/* Filter Buttons and Clear All */}
-      <View style={styles.filterContainer}>
-        {['all', 'active', 'completed'].map((type) => (
-          <Pressable
-            key={type}
-            onPress={() => setFilter(type as 'all' | 'active' | 'completed')}
-            style={[styles.filterButton, { backgroundColor: isDarkMode ? '#333' : '#eee' }, filter === type && { backgroundColor: '#007aff' }]}
-          >
-            <Text
-              style={[styles.filterText, { color: filter === type ? '#fff' : isDarkMode ? '#eee' : '#333' }]}>
-              {type.charAt(0).toUpperCase() + type.slice(1)}
-            </Text>
-          </Pressable>
-        ))}
-        <Pressable
-          onPress={clearAllTasksHandler}
-          disabled={tasks.length === 0}
-          style={({ pressed }) => [
-            styles.clearButton,
-            tasks.length === 0 && { backgroundColor: '#ccc' },
-            pressed && tasks.length !== 0 && { opacity: 0.8 },
-          ]}
-        >
-          <Text style={styles.clearButtonText}>Clear All</Text>
-        </Pressable>
-      </View>
-
-      {/* Task List */}
-      {filteredTasks.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={[styles.emptyText, { color: isDarkMode ? '#aaa' : '#666' }]}>No tasks yet. Add one above!</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={filteredTasks}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <TaskItem
-              task={item}
-              onToggleComplete={toggleTaskHandler}
-              onDelete={deleteTaskHandler}
-              isDarkMode={isDarkMode}
-            />
-          )}
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <View style={[styles.container, { backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
+        {/* Header with dark mode toggle */}
+        <TaskItemTitle
+          isDarkMode={isDarkMode}
+          toggleDarkMode={() => {
+            bounceBulb(); // Trigger bounce animation
+            setIsDarkMode((prev) => !prev); // Toggle dark mode
+          }}
+          bulbScale={bulbScale}
         />
-      )}
-    </View>
+
+        {/* Input field for adding tasks */}
+        <TaskInput onAddTask={addTaskHandler} />
+
+        {/* Filter Buttons and Clear All */}
+        <View style={styles.filterContainer}>
+          {['all', 'active', 'completed'].map((type) => (
+            <Pressable
+              key={type}
+              onPress={() => setFilter(type as 'all' | 'active' | 'completed')} // Set filter type
+              style={[
+                styles.filterButton,
+                { backgroundColor: isDarkMode ? '#333' : '#eee' },
+                filter === type && { backgroundColor: '#007aff' }, // Highlight selected filter
+              ]}
+            >
+              <Text
+                style={[
+                  styles.filterText,
+                  { color: filter === type ? '#fff' : isDarkMode ? '#eee' : '#333' },
+                ]}
+              >
+                {type.charAt(0).toUpperCase() + type.slice(1)} {/* Capitalize filter name */}
+              </Text>
+            </Pressable>
+          ))}
+          <Pressable
+            onPress={clearAllTasksHandler} // Clear all tasks
+            disabled={tasks.length === 0} // Disable button if no tasks
+            style={({ pressed }) => [
+              styles.clearButton,
+              tasks.length === 0 && { backgroundColor: '#ccc' }, // Disabled style
+              pressed && tasks.length !== 0 && { opacity: 0.8 }, // Pressed style
+            ]}
+          >
+            <Text style={styles.clearButtonText}>Clear All</Text>
+          </Pressable>
+        </View>
+
+        {/* Task List */}
+        {filteredTasks.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={[styles.emptyText, { color: isDarkMode ? '#aaa' : '#666' }]}>
+              No tasks yet. Add one above! {/* Message when no tasks */}
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={filteredTasks} // Render filtered tasks
+            keyExtractor={(item) => item.id} // Unique key for each task
+            renderItem={({ item }) => (
+              <TaskItem
+                task={item}
+                onToggleComplete={toggleTaskHandler} // Toggle task completion
+                onDelete={deleteTaskHandler} // Delete task
+                isDarkMode={isDarkMode} // Pass dark mode state
+              />
+            )}
+          />
+        )}
+      </View>
+    </GestureHandlerRootView>
   );
 }
 
