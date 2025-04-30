@@ -30,7 +30,7 @@
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/TaskManagerApp.git
+git clone https://github.com/aksheetha/TaskManagerApp.git
 cd TaskManagerApp
 ```
 
@@ -51,11 +51,6 @@ npx expo start
   npm run android
   npm run ios
   ```
-
----
-
-## 🖼 Screenshots
-_Add screenshots of your app here to showcase its UI and features._
 
 ---
 
