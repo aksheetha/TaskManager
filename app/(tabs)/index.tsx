@@ -1,17 +1,30 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useState } from 'react';
-import { LayoutAnimation, UIManager, View, FlatList, Platform, StyleSheet, Text, Pressable, Animated, Alert,
+import {
+  LayoutAnimation,
+  UIManager,
+  View,
+  FlatList,
+  Platform,
+  StyleSheet,
+  Text,
+  Pressable,
+  Animated,
+  Alert,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler'; // Import GestureHandlerRootView
 import TaskInput from '@/components/TaskInput';
 import TaskItem, { TaskItemTitle } from '../../components/TaskItem';
-import AppLoading from 'expo-app-loading';
+import * as SplashScreen from 'expo-splash-screen'; // Import expo-splash-screen
 import { useFonts, Inter_400Regular, Inter_600SemiBold } from '@expo-google-fonts/inter';
 
 // Enable layout animation for Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
+
+// Prevent the splash screen from auto-hiding
+SplashScreen.preventAutoHideAsync();
 
 export interface Task {
   id: string;
@@ -34,9 +47,16 @@ export default function HomeScreen() {
     Inter_600SemiBold,
   });
 
+  // Hide the splash screen once fonts are loaded
+  useEffect(() => {
+    if (fontsLoaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
   // Show loading screen until fonts are loaded
   if (!fontsLoaded) {
-    return <AppLoading />;
+    return null; // Keep the splash screen visible
   }
 
   // Function to create a bounce animation for the bulb
@@ -45,12 +65,14 @@ export default function HomeScreen() {
       Animated.timing(bulbScale, {
         toValue: 1.2, // Scale up
         duration: 150,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
+
       }),
       Animated.timing(bulbScale, {
         toValue: 1, // Scale back to normal
         duration: 150,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
+
       }),
     ]).start();
   };

@@ -5,24 +5,24 @@
 ---
 
 ## 📱 Features
-- **Add New Tasks** — Quickly add tasks via input bar or pressing Enter key.
-- **Mark Tasks as Completed** — Tap checkbox to toggle a task as done.
-- **Swipe to Delete** — Swipe left to delete tasks using `react-native-gesture-handler`.
-- **Dark/Light Mode Toggle** — Beautiful theme switching with animated bulb icon.
-- **Task Filters** — View All, Active, or Completed tasks easily.
-- **Input Refocus** — After adding, the input cursor automatically refocuses.
-- **Shake on Empty Input** — Prevents blank task addition with subtle shake animation.
-- **Clear All Tasks** — Remove all tasks with a confirmation prompt.
-- **Minimalistic UI** — Clean and polished mobile-first design.
+- ✅ **Add New Tasks** — Quickly add tasks via input bar or pressing Enter key.
+- ✅ **Mark Tasks as Completed** — Tap checkbox to toggle a task as done.
+- ✅ **Swipe to Delete** — Swipe left to delete tasks using `react-native-gesture-handler`.
+- ✅ **Dark/Light Mode Toggle** — Beautiful theme switching with animated bulb icon.
+- ✅ **Task Filters** — View All, Active, or Completed tasks easily.
+- ✅ **Input Refocus** — After adding, the input cursor automatically refocuses.
+- ✅ **Shake on Empty Input** — Prevents blank task addition with subtle shake animation.
+- ✅ **Clear All Tasks** — Remove all tasks with a confirmation prompt.
+- ✅ **Minimalistic UI** — Clean and polished mobile-first design.
 
 ---
 
 ## 🛠 Built With
-- **React Native** (Expo Framework)
+- **React Native** via **Expo SDK 52**
 - **TypeScript**
-- **Expo SDK** (Animations, Fonts)
-- **react-native-gesture-handler** (Swipeable Delete)
-- **React Native Animated API** (Bounce, Shake)
+- **Expo Modules** (`splash-screen`, `status-bar`, `fonts`, `system-ui`)
+- **react-native-gesture-handler** — Swipeable Delete
+- **React Native Animated API** — Bounce, Fade, Shake Animations
 
 ---
 
@@ -39,18 +39,36 @@ cd TaskManagerApp
 npm install
 ```
 
-### 3. Start the Development Server
+### 3. Start the Development Server (Clear Metro Cache)
 ```bash
-npx expo start
+npx expo start --clear
 ```
 
 ### 4. Open the App
-- Use the **Expo Go** app to scan the QR code.
-- Or run it on an emulator:
+- 📱 Use the **Expo Go** app on your mobile to scan the QR code.
+- 💻 Or press `w` to run it on Web.
+- 🧪 For emulators:
   ```bash
   npm run android
   npm run ios
   ```
+
+---
+
+## ⚠️ Known Development Warnings (Safe to Ignore)
+
+> These warnings occur only on web and do not affect functionality:
+
+- `props.pointerEvents is deprecated`: Triggered by dependencies; not used in app code.
+
+
+✅ All warnings are handled or documented and do **not appear on mobile (iOS/Android).**
+
+---
+
+## 🖼️ Optional: Demo Video / Screenshots (Add If You Have)
+> 📹 Add a short GIF or video of the app running  
+> 🖼️ Include screenshots in both light and dark mode
 
 ---
 
