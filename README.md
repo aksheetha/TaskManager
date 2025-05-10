@@ -52,6 +52,92 @@ npx expo start --clear
   npm run android
   npm run ios
   ```
+---
+
+## 🐳 Docker Deployment
+
+You can run this Expo Web app using Docker for a consistent and easy setup — no local environment configuration needed.
+
+---
+
+### ✅ Prerequisites
+
+- Docker installed on your machine  
+  [Download Docker Desktop](https://www.docker.com/products/docker-desktop)
+
+---
+
+### 📁 Project Structure
+
+Make sure your root directory includes:
+
+```
+TaskManagerApp/
+├── app/
+│   └── (tabs)/
+│       └── index.tsx
+├── babel.config.js
+├── Dockerfile
+├── package.json
+├── .dockerignore
+```
+
+---
+
+### 📄 Dockerfile (already included)
+
+```Dockerfile
+FROM node:18
+
+WORKDIR /app
+
+COPY . .
+
+RUN npm install
+
+ENV NODE_ENV=development
+ENV CI=1
+
+EXPOSE 19006
+
+CMD ["npx", "expo", "start", "--web"]
+```
+
+---
+
+### 📄 .dockerignore (already included)
+
+```dockerignore
+node_modules
+.expo
+.expo-shared
+npm-debug.log
+```
+
+---
+
+### 🧱 Build the Docker Image
+
+From the root of the project:
+
+```bash
+docker build -t expo-task-manager .
+```
+
+---
+
+### ▶️ Run the Container
+
+```bash
+docker run -p 19006:19006 expo-task-manager
+```
+
+---
+
+### 🌐 Open the App
+
+Once the container is running, visit:  
+👉 http://localhost:19006
 
 ---
 
@@ -59,16 +145,9 @@ npx expo start --clear
 
 > These warnings occur only on web and do not affect functionality:
 
-- `props.pointerEvents is deprecated`: Triggered by dependencies; not used in app code.
-
-
-✅ All warnings are handled or documented and do **not appear on mobile (iOS/Android).**
-
----
-
-## 🖼️ Optional: Demo Video / Screenshots (Add If You Have)
-> 📹 Add a short GIF or video of the app running  
-> 🖼️ Include screenshots in both light and dark mode
+- "shadow*" style props are deprecated: Replace with boxShadow for web compatibility.
+useNativeDriver is not supported: Occurs on web; animations fallback to JS-based.
+- ✅ All warnings are handled or documented and do **not appear on mobile (iOS/Android).**
 
 ---
 
