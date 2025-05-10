@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler'; // Import GestureHandlerRootView
 import TaskInput from '@/components/TaskInput';
-import TaskItem, { TaskItemTitle } from './components/TaskItem';
+import TaskItem, { TaskItemTitle } from '../../components/TaskItem';
 import * as SplashScreen from 'expo-splash-screen'; // Import expo-splash-screen
 import { useFonts, Inter_400Regular, Inter_600SemiBold } from '@expo-google-fonts/inter';
 

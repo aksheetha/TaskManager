@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Animated, Text, View, StyleSheet, Pressable } from 'react-native'
 import { Platform } from 'react-native';;
-import { Task } from '../index'; // Import Task interface for type safety
+import { Task } from '../app/(tabs)/index'; // Import Task interface for type safety
 import { MaterialCommunityIcons } from '@expo/vector-icons'; // Icons for task status and dark mode
 import { MaterialIcons } from '@expo/vector-icons'; // Icons for delete action
 import { Swipeable } from 'react-native-gesture-handler'; // Swipeable component for swipe actions
