@@ -18,6 +18,25 @@ import TaskItem, { TaskItemTitle } from '../../components/TaskItem';
 import * as SplashScreen from 'expo-splash-screen'; // Import expo-splash-screen
 import { useFonts, Inter_400Regular, Inter_600SemiBold } from '@expo-google-fonts/inter';
 
+if (__DEV__) {
+  const originalWarn = console.warn;
+  console.warn = (...args) => {
+    const warning = args[0];
+    if (
+      typeof warning === 'string' &&
+      (
+        warning.includes('"shadow*" style props are deprecated') ||
+        warning.includes('pointerEvents is deprecated') ||
+        warning.includes('useNativeDriver is not supported') ||
+        warning.includes('Cannot record touch end')
+      )
+    ) {
+      return;
+    }
+    originalWarn(...args);
+  };
+}
+
 // Enable layout animation for Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -272,3 +291,4 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
 });
+
