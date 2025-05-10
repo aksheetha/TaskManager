@@ -76,7 +76,6 @@ TaskManagerApp/
 ├── app/
 │   └── (tabs)/
 │       └── index.tsx
-├── babel.config.js
 ├── Dockerfile
 ├── package.json
 ├── .dockerignore
@@ -147,7 +146,6 @@ Once the container is running, visit:
 
 - "shadow*" style props are deprecated: Replace with boxShadow for web compatibility.
 useNativeDriver is not supported: Occurs on web; animations fallback to JS-based.
-- ✅ All warnings are handled or documented and do **not appear on mobile (iOS/Android).**
 
 ---
 
